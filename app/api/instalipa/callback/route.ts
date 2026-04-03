@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getAdminDb } from '@/lib/firebase-admin';
 
 export async function POST(req: Request) {
   try {
@@ -6,22 +7,28 @@ export async function POST(req: Request) {
     console.log('Received Instalipa Callback:', data);
 
     const { transaction_id, status, details, phone_number, amount, reference } = data;
+    const db = getAdminDb();
 
-    // Here you would typically update your database with the final status
-    // For example:
-    // if (status === 'Success') {
-    //   await db.transactions.update({ where: { id: reference }, data: { status: 'COMPLETED' } });
-    // } else if (status === 'Failed') {
-    //   await db.transactions.update({ where: { id: reference }, data: { status: 'FAILED', error: details } });
-    // }
+    if (reference) {
+      const txRef = db.collection('transactions').doc(reference);
+      const txDoc = await txRef.get();
+      
+      if (txDoc.exists) {
+        if (status === 'Success') {
+          await txRef.update({ status: 'Success' });
+        } else if (status === 'Failed') {
+          await txRef.update({ status: 'Failed', error: details });
+          
+          // If it failed, we might want to reverse the commission, but for simplicity,
+          // we'll leave it or handle it manually. In a production app, you'd reverse it.
+        }
+      }
+    }
 
     // Instalipa expects a 200 OK with {"status": "ok"}
     return NextResponse.json({ status: 'ok' });
   } catch (error) {
     console.error('Error processing Instalipa callback:', error);
-    // Return 200 so Instalipa doesn't keep retrying unnecessarily if it's a bad payload,
-    // or return 500 if you want them to retry. The docs say "If your server fails to respond with 200 OK, Instalipa will retry".
-    // We'll return 500 to allow retries on actual server errors.
     return NextResponse.json({ status: 'error' }, { status: 500 });
   }
 }

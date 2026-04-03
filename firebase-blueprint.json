@@ -1,0 +1,128 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A Telegram user interacting with the bot.",
+      "type": "object",
+      "properties": {
+        "telegramId": {
+          "type": "string",
+          "description": "The unique Telegram user ID."
+        },
+        "username": {
+          "type": "string",
+          "description": "The Telegram username."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The Telegram first name."
+        },
+        "isBanned": {
+          "type": "boolean",
+          "description": "Whether the user is banned from using the bot."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "user"],
+          "description": "The user's role."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the user first interacted with the bot."
+        }
+      },
+      "required": ["telegramId", "isBanned", "role", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "An airtime purchase or commission transaction.",
+      "type": "object",
+      "properties": {
+        "telegramId": {
+          "type": "string",
+          "description": "The Telegram ID of the user who made the purchase or earned the commission."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the transaction."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The phone number topped up (for purchases)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Success", "Failed"],
+          "description": "The status of the transaction."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["purchase", "commission"],
+          "description": "The type of transaction."
+        },
+        "groupId": {
+          "type": "string",
+          "description": "The Telegram group ID where the purchase was made (if applicable)."
+        },
+        "instalipaReference": {
+          "type": "string",
+          "description": "The reference ID used for Instalipa."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the transaction occurred."
+        }
+      },
+      "required": ["telegramId", "amount", "status", "type", "createdAt"]
+    },
+    "Group": {
+      "title": "Group",
+      "description": "A Telegram group where the bot is added.",
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "type": "string",
+          "description": "The Telegram group ID."
+        },
+        "groupName": {
+          "type": "string",
+          "description": "The name of the group."
+        },
+        "adminTelegramId": {
+          "type": "string",
+          "description": "The Telegram ID of the user who added the bot to the group."
+        },
+        "commissionBalance": {
+          "type": "number",
+          "description": "The current unpaid commission balance for this group."
+        },
+        "totalEarned": {
+          "type": "number",
+          "description": "The total commission earned by this group."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the bot was added to the group."
+        }
+      },
+      "required": ["groupId", "adminTelegramId", "commissionBalance", "totalEarned", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{telegramId}": {
+      "schema": "User",
+      "description": "Stores Telegram users."
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Stores airtime purchases and commissions."
+    },
+    "/groups/{groupId}": {
+      "schema": "Group",
+      "description": "Stores Telegram groups and their commission balances."
+    }
+  }
+}

@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: telegramId
+    // Fields:
+    //   - telegramId: string (required)
+    //   - username: string (optional)
+    //   - firstName: string (optional)
+    //   - isBanned: boolean (required)
+    //   - role: string (required, 'admin' or 'user')
+    //   - createdAt: string (required)
+    //
+    // Collection: transactions
+    // Document ID: transactionId
+    // Fields:
+    //   - telegramId: string (required)
+    //   - amount: number (required)
+    //   - phoneNumber: string (optional)
+    //   - status: string (required, 'Pending', 'Success', 'Failed')
+    //   - type: string (required, 'purchase', 'commission')
+    //   - groupId: string (optional)
+    //   - instalipaReference: string (optional)
+    //   - createdAt: string (required)
+    //
+    // Collection: groups
+    // Document ID: groupId
+    // Fields:
+    //   - groupId: string (required)
+    //   - groupName: string (optional)
+    //   - adminTelegramId: string (required)
+    //   - commissionBalance: number (required)
+    //   - totalEarned: number (required)
+    //   - createdAt: string (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == "sammyonduso254@gmail.com" && request.auth.token.email_verified == true
+      );
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{telegramId} {
+      // Only admins can read all users
+      allow read: if isAdmin();
+      // Only admins can update users (e.g., to ban/unban)
+      allow update: if isAdmin();
+      // Webhook creates users via admin SDK, so no client create needed
+      allow create: if false;
+      allow delete: if false;
+    }
+
+    match /transactions/{transactionId} {
+      // Only admins can read all transactions
+      allow read: if isAdmin();
+      allow write: if false; // Webhook handles writes
+    }
+
+    match /groups/{groupId} {
+      // Only admins can read all groups
+      allow read: if isAdmin();
+      allow write: if false; // Webhook handles writes
+    }
+  }
+}

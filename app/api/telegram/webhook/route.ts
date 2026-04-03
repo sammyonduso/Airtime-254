@@ -35,14 +35,44 @@ export async function POST(req: Request) {
       const msg = update.message;
       const chatId = msg.chat.id;
       const text = msg.text || '';
+      const from = msg.from || {};
 
       if (text.startsWith('/start')) {
         await sendTelegramRequest('sendMessage', {
           chat_id: chatId,
           text: 'Welcome to the Airtime Bot! 📱\n\nTo buy airtime, use the command:\n`/buy <amount> <phone_number>`\n\nExample: `/buy 100 254705340183` to buy KES 100 airtime.',
           parse_mode: 'Markdown',
+          reply_markup: {
+            keyboard: [
+              [{ text: '📱 Buy Airtime' }],
+              [{ text: '👤 My Profile' }, { text: '❓ Help' }]
+            ],
+            resize_keyboard: true,
+            is_persistent: true
+          }
         });
       } 
+      else if (text === '📱 Buy Airtime') {
+        await sendTelegramRequest('sendMessage', {
+          chat_id: chatId,
+          text: 'To buy airtime, please use the following format:\n\n`/buy <amount> <phone_number>`\n\nExample: `/buy 100 254705340183`',
+          parse_mode: 'Markdown',
+        });
+      }
+      else if (text === '👤 My Profile') {
+        await sendTelegramRequest('sendMessage', {
+          chat_id: chatId,
+          text: `*Your Profile*\n\nTelegram ID: \`${from.id || 'Unknown'}\`\nName: ${from.first_name || 'Unknown'}\n\n_Transaction history is available to admins._`,
+          parse_mode: 'Markdown',
+        });
+      }
+      else if (text === '❓ Help') {
+        await sendTelegramRequest('sendMessage', {
+          chat_id: chatId,
+          text: 'Need help? Here are the commands you can use:\n\n`/start` - Show the main menu\n`/buy <amount> <phone_number>` - Buy airtime\n\nIf you need further assistance, please contact the administrator.',
+          parse_mode: 'Markdown',
+        });
+      }
       else if (text.startsWith('/buy')) {
         const parts = text.split(' ');
         if (parts.length !== 3) {
