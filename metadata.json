@@ -1,0 +1,5 @@
+{
+  "name": "Airtime Telegram Bot",
+  "description": "A dashboard and webhook handler for a Telegram bot that sells airtime.",
+  "requestFramePermissions": []
+}
